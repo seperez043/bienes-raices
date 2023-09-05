@@ -9,7 +9,19 @@ block contenido
      div.mt-8.mx-auto.max-w-md
             div.bg-white.py-8.px-4.shadow
                 form  
-                    div 
+                    div.space-y-5
                         label.block.text-sm.uppercase.text-gray-500.mb-w3.font-blod(for="nombre") Tu nombre
-                        input#nombre.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(placeholder="Tu Nombres")
+                        input#nombre.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(placeholder="Nombre" type="text" name="nombre") 
+                    div
+                        label.block.text-sm.uppercase.text-gray-500.mb-w3.font-blod(for="email") Email de Registros
+                        input#email.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(placeholder="Email" type="email" name="nombre")
+                    div 
+                        label.block.text-sm.uppercase.text-gray-500.mb-w3.font-blod(for="password") Password
+                        input#password.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(placeholder="Contraseña" type="password" name="password") 
+                    div
+                        label.block.text-sm.uppercase.text-gray-500.mb-w3.font-blod(for="repetir_password") Confirmar Password
+                        input#repetir_password.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(placeholder="Repetir Contraseña" type="password" name="repetir_password") 
+
+                    input(class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 cursor-pointer" type="submit" value="Crear Cuenta")
+                       
                         
