@@ -79,17 +79,26 @@ const registrar = async (req, res) => {
     pagina: 'Cuenta creada correctamente',
     mensaje: 'Hemos enviado un email de confirmacion, presina en el enlace'
   })
-};
+}
 
+//Funcion que comprueba una cuenta
+const confirmar = (req, res) => {
+  const { token } = req.params;
+  console.log('esto es una prueba', token);
+}
+
+//Formulario de para restablecer contraseña
 const formularioOlvidePassword = (req, res) => {
   res.render("auth/olvide-password", {
     pagina: "Recupera tu acceso Bienes Raices",
   });
-};
+}
+
 
 export {
   formularioLogin,
   formularioRegistro,
   registrar,
+  confirmar,
   formularioOlvidePassword,
 };
