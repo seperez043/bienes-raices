@@ -3,13 +3,14 @@ import Usuario from "../models/Usuario.js";
 import { generarId } from "../helpers/tokens.js";
 import { emailRegistro } from '../helpers/emails.js';
 
-
+//Formulario para iniciar sesión
 const formularioLogin = (req, res) => {
   res.render("auth/login", {
     pagina: "Iniciar Sesión",
   });
 };
 
+//Formulario de registro de usuario
 const formularioRegistro = (req, res) => {
   res.render("auth/registro", {
     pagina: "Crear cuenta",
@@ -31,6 +32,7 @@ const registrar = async (req, res) => {
 
   let resultado = validationResult(req);
   console.log("resultado.array()", resultado.array());
+
   //Verificar que el resultado este vacio
   if (!resultado.isEmpty()) {
     return res.render("auth/registro", {
@@ -71,7 +73,7 @@ const registrar = async (req, res) => {
     nombre: usuario.nombre,
     email: usuario.email,
     password: usuario.password,
-    token: usuario.password
+    token: usuario.token
   });
 
   //Mostrar mensaje de confirmacion
@@ -82,9 +84,23 @@ const registrar = async (req, res) => {
 }
 
 //Funcion que comprueba una cuenta
-const confirmar = (req, res) => {
+const confirmar = async (req, res) => {
+
   const { token } = req.params;
-  console.log('esto es una prueba', token);
+
+  //Virificar si el token es valido
+  const usuario = await Usuario.findOne({ where: { token } });
+
+  if (!usuario) {
+    return res.render('auth/confirmar-cuenta', {
+      pagina: 'Error al confirmar tu cuenta',
+      mensaje: 'Hubo un error al confirmar tu cuenta, intenta de nuevo',
+      error: true
+    })
+  }
+
+  console.log(usuario.token);
+
 }
 
 //Formulario de para restablecer contraseña
@@ -94,7 +110,7 @@ const formularioOlvidePassword = (req, res) => {
   });
 }
 
-
+//Exportar funciones
 export {
   formularioLogin,
   formularioRegistro,
