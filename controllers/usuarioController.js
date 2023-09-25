@@ -1,12 +1,13 @@
 import { check, validationResult } from "express-validator";
 import Usuario from "../models/Usuario.js";
 import { generarId } from "../helpers/tokens.js";
-import { emailRegistro } from '../helpers/emails.js';
+import { emailRegistro, olvidePassword } from '../helpers/emails.js';
 
 //Formulario para iniciar sesión
 const formularioLogin = (req, res) => {
   res.render("auth/login", {
     pagina: "Iniciar Sesión",
+    csrfToken: req.csrfToken()
   });
 };
 
@@ -14,6 +15,7 @@ const formularioLogin = (req, res) => {
 const formularioRegistro = (req, res) => {
   res.render("auth/registro", {
     pagina: "Crear cuenta",
+    csrfToken: req.csrfToken()
   });
 };
 
@@ -28,7 +30,7 @@ const registrar = async (req, res) => {
     .isLength({ min: 8 })
     .withMessage("La contraseña debe contener por los menos 8 caracteres")
     .run(req);
-  // await check('repetir_password').equals('password').withMessage('Las contraseñas no coiciden').run(req)
+  await check('repetir_password').equals('password').withMessage('Las contraseñas no coiciden').run(req)
 
   let resultado = validationResult(req);
   console.log("resultado.array()", resultado.array());
@@ -37,6 +39,7 @@ const registrar = async (req, res) => {
   if (!resultado.isEmpty()) {
     return res.render("auth/registro", {
       pagina: "Crear cuenta",
+      csrfToken: req.csrfToken(),
       errores: resultado.array(),
       usuario: {
         nombre: req.body.nombre,
@@ -53,6 +56,7 @@ const registrar = async (req, res) => {
   if (existeUsuario) {
     return res.render("auth/registro", {
       pagina: "Crear cuenta",
+      csrfToken: req.csrfToken(),
       errores: [{ msg: "El usuario ya esta registrado" }],
       usuario: {
         nombre: req.body.nombre,
@@ -79,6 +83,7 @@ const registrar = async (req, res) => {
   //Mostrar mensaje de confirmacion
   res.render('templates/mensaje', {
     pagina: 'Cuenta creada correctamente',
+    csrfToken: req.csrfToken(),
     mensaje: 'Hemos enviado un email de confirmacion, presina en el enlace'
   })
 }
@@ -95,20 +100,89 @@ const confirmar = async (req, res) => {
     return res.render('auth/confirmar-cuenta', {
       pagina: 'Error al confirmar tu cuenta',
       mensaje: 'Hubo un error al confirmar tu cuenta, intenta de nuevo',
+      csrfToken: req.csrfToken(),
       error: true
     })
   }
 
-  console.log(usuario.token);
+  usuario.token = null;
+  usuario.confirmado = true;
+  await usuario.save();
 
+  res.render('auth/confirmar-cuenta', {
+    csrfToken: req.csrfToken(),
+    pagina: 'Cuenta confirmada',
+    mensaje: 'La cuenta se confirmo correctamente'
+
+  })
 }
 
 //Formulario de para restablecer contraseña
 const formularioOlvidePassword = (req, res) => {
   res.render("auth/olvide-password", {
     pagina: "Recupera tu acceso Bienes Raices",
+    csrfToken: req.csrfToken(),
   });
+
 }
+
+const resetPassword = async (req, res) => {
+
+  //Validacion
+  await check("email").isEmail().withMessage("Eso no parece un email").run(req)
+  let resultado = validationResult(req);
+
+  //Verificar que el resultado este vacio
+  if (!resultado.isEmpty()) {
+    return res.render("auth/olvide-password", {
+      pagina: "Recupera tu acceso Bienes Raices",
+      csrfToken: req.csrfToken(),
+      errores: resultado.array()
+
+    });
+
+  }
+  //Buscar usuario
+
+  const { email } = req.body;
+  const usuario = await Usuario.findOne({ where: { email } });
+  if (!usuario) {
+    return res.render("auth/olvide-password", {
+      pagina: "Recupera tu acceso Bienes Raices",
+      csrfToken: req.csrfToken(),
+      errores: [{ msg: 'El email no pertenece a ningun usuario' }]
+
+    });
+
+  }
+  //General un token y enviar email
+
+  const samir = usuario.token = generarId();
+  await usuario.save();
+
+  //Enviar email
+  olvidePassword({
+    email: usuario.email,
+    nombre: usuario.nombre,
+    token: usuario.token
+  })
+  //Mostrar mensaje
+  res.render('templates/mensaje', {
+    pagina: 'Restablece tu password',
+    csrfToken: req.csrfToken(),
+    mensaje: 'Hemos enviado un email con las instruciones, presina en el enlace'
+  })
+
+}
+
+const comprobarToken = (req, res, next) => {
+
+}
+const nuevoPassword = (req, res, next) => {
+
+}
+
+
 
 //Exportar funciones
 export {
@@ -117,4 +191,7 @@ export {
   registrar,
   confirmar,
   formularioOlvidePassword,
+  resetPassword,
+  comprobarToken,
+  nuevoPassword
 };

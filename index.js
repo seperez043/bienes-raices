@@ -1,4 +1,6 @@
 import express from 'express';
+import csrf from 'csurf';
+import cookieParser from 'cookie-parser';
 import usuarioRoutes from './routes/usuariosRoutes.js';
 import db from './config/db.js'
 //const express = require('express');
@@ -8,6 +10,12 @@ const app = express();
 
 //Habiliatar lectura de datos del formulario
 app.use(express.urlencoded({ extended: true }));
+
+//Habilitar  Coolieraser
+app.use(cookieParser());
+
+//Habilitar CSRF
+app.use(csrf({ cookie: true }));
 
 //Conexion a la base de datos
 try {
